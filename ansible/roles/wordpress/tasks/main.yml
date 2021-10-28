@@ -16,7 +16,7 @@
     wp --path=/var/www/test3/  db check
     wp --path=/var/www/test3/  core install --url=https://{{ site }}/ --title='test' --admin_user={{ admin_user }} --admin_password={{ admin_password }} --admin_email={{ admin_email }}
     sleep 5s
-    certbot --nginx -d {{ site }} --non-interactive --agree-tos -m {{ admin_email }}
+    certbot --nginx -d {{ site }} -d www.{{ site }} --non-interactive --agree-tos -m {{ admin_email }}
     (crontab -l 2>/dev/null; echo '43 6 * * * certbot renew --post-hook "systemctl reload nginx"') | crontab -
   args:
     executable: /bin/bash
