@@ -1,0 +1,9 @@
+# inventory with pass
+
+inventory
+
+# Vagrant stuff
+
+.vagrant/*
+
+

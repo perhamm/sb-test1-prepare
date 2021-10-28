@@ -1,0 +1,16 @@
+datadir: /var/lib/mysql
+innodb_buffer_pool_size: 256M
+innodb_log_file_size: 32M
+innodb_log_buffer_size: 1M
+max_connections: 10
+general_log_file: "{{ datadir }}/mysql.log"
+log_error: "{{ datadir }}/error.log"
+slow_query_log_file: "{{ datadir }}/slow.log"
+
+client_dbname: wordpress
+client_dbuser_name: wordpress
+client_db_password: 
+
+
+client_dbuser_readonly_name: wordpress_readonly
+client_db_readonly_password: 

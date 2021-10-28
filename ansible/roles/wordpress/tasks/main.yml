@@ -1,0 +1,26 @@
+---
+- name: Check if exists site
+  stat:
+    path: "/var/www/test3/wp-config.php"
+  register: wp_config
+
+- name: Bootstrap if site isn't exists
+  shell: |
+    systemctl restart firewalld
+    systemctl restart mariadb
+    systemctl restart nginx
+    systemctl restart php-fpm
+    sleep 5s
+    wp --path=/var/www/test3/  core download --locale=ru_RU --force
+    wp --path=/var/www/test3/  core config --dbhost=localhost --dbname={{ client_dbname }} --dbuser={{ client_dbuser_name }} --dbpass={{ client_db_password }} --locale=ru_RU --dbprefix=wp_
+    wp --path=/var/www/test3/  db check
+    wp --path=/var/www/test3/  core install --url=https://{{ site }}/ --title='test' --admin_user={{ admin_user }} --admin_password={{ admin_password }} --admin_email={{ admin_email }}
+    sleep 5s
+    certbot --nginx -d {{ site }} --non-interactive --agree-tos -m {{ admin_email }}
+    (crontab -l 2>/dev/null; echo '43 6 * * * certbot renew --post-hook "systemctl reload nginx"') | crontab -
+  args:
+    executable: /bin/bash
+    chdir: /root
+  become: yes
+  when: wp_config.stat.exists|bool  == false
+ 

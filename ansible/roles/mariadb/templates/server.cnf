@@ -1,0 +1,53 @@
+#
+# These groups are read by MariaDB server.
+# Use it for options that only the server (but not clients) should see
+#
+# See the examples of server my.cnf files in /usr/share/mysql/
+#
+
+# this is read by the standalone daemon and embedded servers
+[server]
+
+# this is only for the mysqld standalone daemon
+[mysqld]
+performance_schema = on
+character-set-server=utf8
+collation-server=utf8_general_ci
+lower_case_table_names = 1
+default_storage_engine = innodb
+skip_name_resolve = 1
+
+max_connections = {{ max_connections }}
+
+datadir = {{ datadir }}
+#socket = /opt/mysql/mysql.sock
+
+innodb_autoinc_lock_mode=2
+innodb_buffer_pool_size = {{ innodb_buffer_pool_size }}
+innodb_log_file_size = {{ innodb_log_file_size }}
+innodb_log_buffer_size = {{ innodb_log_buffer_size }}
+
+
+
+query_cache_size = 64M
+tmp_table_size = 32M
+
+connect_timeout = 30
+
+general_log = 0
+general_log_file = {{ general_log_file }}
+log_error=/opt/mysql/error.log
+slow_query_log_file = {{ slow_query_log_file }}
+slow_query_log = 1
+long_query_time = 5
+log_queries_not_using_indexes = 0
+
+#
+# * Galera-related settings
+#
+[galera]
+
+[embedded]
+
+[mariadb]
+

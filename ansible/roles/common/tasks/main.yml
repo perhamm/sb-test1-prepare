@@ -1,0 +1,106 @@
+---
+- name: Upgrade all packages
+  yum: 
+    name: '*'
+    state: latest
+  register: yum_updates
+ 
+
+- name: reboot system after update kernel
+  shell: sleep 2 && shutdown -r now "Ansible package updates triggered"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: dict((yum_updates.changes|default(dict())).updated|default([])).kernel is defined
+  register: reboot
+
+- name: wait for the server to restart
+  wait_for:
+        host: "{{ ansible_ssh_host }}"
+        port: 22
+        state: started
+        delay: 10
+        timeout: 300
+  become: false
+  connection: local
+  when: reboot.changed
+  
+- name: Add epel-release repo
+  yum:
+    name: epel-release
+    state: present
+        
+
+- name: Install packages
+  yum: 
+        name: "{{ item }}"
+        state: present
+  with_items:
+        - firewalld
+        - vim
+        - sysstat
+        - wget
+        - tcpdump
+        - telnet
+        - bc
+        - iotop
+        - lsof
+        - bind-utils
+        - jq
+        - ntp
+        - fio
+        - curl
+        - git
+
+- name: Stop and disable iptables
+  systemd:
+        name: iptables
+        state: stopped
+        enabled: no
+  ignore_errors: yes
+
+- name: Start and enable firewalld
+  systemd:
+        name: firewalld
+        state: started
+        enabled: yes
+
+- name: Add rule for http
+  firewalld:
+    service: http
+    permanent: true
+    state: enabled
+
+- name: Add rule for https
+  firewalld:
+    service: https
+    permanent: true
+    state: enabled
+  notify: Restart firewalld
+
+- name: install SELinux packages
+  yum:
+        name: "{{ item }}"
+        state: present
+  with_items:
+        - libselinux-python
+        - policycoreutils
+        - policycoreutils-python
+        - selinux-policy
+        - selinux-policy-targeted
+        - libselinux-utils
+        - setools
+        - setools-console
+
+- name: Install remi repository
+  yum: 
+        name: http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+        state: present
+
+
+- name: set selinux policy
+  selinux:
+        policy: targeted
+        state: permissive
+
+

@@ -1,0 +1,32 @@
+---
+
+- name: Install nginx
+  yum: name=nginx state=present
+
+- name: http service state
+  service: name=nginx state=started enabled=yes
+
+
+- name: Check if exists site
+  stat:
+    path: "/etc/nginx/conf.d/test3.conf"
+  register: nginx_config
+
+- name: Copy nginx main configuration file
+  template: src=nginx.conf  dest=/etc/nginx/nginx.conf
+  notify: restart nginx
+  when: nginx_config.stat.exists|bool  == false
+
+- name: Copy nginx virtual hosts configuration for wordpress
+  template: src=test3.conf  dest=/etc/nginx/conf.d/test3.conf
+  notify: restart nginx
+  when: nginx_config.stat.exists|bool  == false
+  
+- name: Install certbot
+  yum: name=certbot state=present
+  
+- name: Install certbot
+  yum: name=python2-certbot-nginx state=present
+
+
+

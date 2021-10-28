@@ -1,0 +1,21 @@
+test3 ansible_host=159.89.110.59
+
+[webserver]
+test3
+
+[webserver:vars]
+#ansible_ssh_user=vagrant
+#ansible_ssh_private_key_file='.vagrant/machines/test3/virtualbox/private_key'
+ansible_ssh_user=root
+ansible_ssh_pass=changeme
+#ansible_become_method=sudo
+#ansible_become_pass=
+client_dbname=wordpress
+client_dbuser_name=wordpress
+client_db_password=changeme
+client_dbuser_readonly_name=wordpress_readonly
+client_db_readonly_password=changeme
+admin_user=admin
+admin_password=changeme
+admin_email=fyvaoldg@gmail.com
+site=test3.club

@@ -1,0 +1,70 @@
+---
+- name: Copy the MariaDB  repository definition
+  copy: src=MariaDB.repo dest=/etc/yum.repos.d/
+
+
+- name: Install MariaDB package
+  yum: name={{ item }} state=installed
+  with_items:
+   - MariaDB-common
+   - MariaDB-server
+   - MariaDB-client
+   - MySQL-python
+
+- name: create data dir
+  file:
+    state: directory
+    path: "{{ datadir }}"
+    owner: mysql
+    group: mysql
+    mode: 0755
+
+- name: create mariadb config
+  template:
+    src: server.cnf
+    dest: /etc/my.cnf.d/server.cnf
+  notify: restart mariadb
+
+- name: Start MariaDB Service
+  service: name=mariadb state=started enabled=yes
+
+
+- name: delete anonimous users
+  mysql_user:
+        name: ""
+        host_all: yes
+        state: absent
+
+- name: delete test database
+  mysql_db: 
+        name: test
+        state: absent
+
+- name:  create users database
+  mysql_db: 
+        name: "{{ client_dbname }}"
+        state: present
+
+- name: create a mysql user for wp
+  mysql_user:
+        name: "{{ client_dbuser_name }}"
+        password: "{{ client_db_password }}"
+        host: "{{ item }}"
+        priv: "{{ client_dbname }}.*:ALL"
+        state: present
+  with_items:
+        - localhost
+        - 127.0.0.1
+        - ::1
+
+- name: create a mysql user for readonly
+  mysql_user:
+        name: "{{ client_dbuser_readonly_name }}"
+        password: "{{ client_db_readonly_password }}"
+        host: "{{ item }}"
+        priv: "{{ client_dbname }}.*:SELECT"
+        state: present
+  with_items:
+        - localhost
+        - 127.0.0.1
+        - ::1

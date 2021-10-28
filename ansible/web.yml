@@ -1,0 +1,9 @@
+---
+- hosts: webserver
+  roles:
+        - common
+        - mariadb
+        - nginx
+        - php-fpm
+        - wordpress
+  become: yes

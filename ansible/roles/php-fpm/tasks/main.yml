@@ -1,0 +1,73 @@
+---
+- name: Install php-fpm and deps
+  yum: 
+        name: "{{ item }}"
+        state: present
+        enablerepo: remi-php74
+  with_items:
+        - php
+        - php-devel
+        - php-fpm
+        - php-gd
+        - php-mbstring
+        - php-mcrypt
+        - php-mysql
+        - php-opcache
+        - php-xml
+        - php-xmlrpc
+        - php-zip
+        - curl
+        - php-curl
+        - memcached
+        - libmemcached-devel
+        - php-pecl-memcache
+        - php-cli
+
+- name: enable and start memcache
+  systemd:
+    name: memcached
+    state: started
+    enabled: True
+    
+- name: Disable default pool
+  ansible.builtin.file:
+   path: /etc/php-fpm.d/www.conf
+   state: absent
+  notify: restart php-fpm
+  
+- name: /var/www/test3/
+  ansible.builtin.file:
+    path: /var/www/test3/
+    state: directory
+    owner: nginx
+    group: nginx
+    
+- name: /opt/php-fpm/
+  ansible.builtin.file:
+    path: /opt/php-fpm/
+    state: directory
+    recurse: yes
+    owner: nginx
+    group: nginx
+
+
+- name: Copy php-fpm configuration
+  template: src=wordpress.conf dest=/etc/php-fpm.d/test3.conf
+  notify:
+        - restart php-fpm
+        - restart nginx
+ 
+- name: enable and start php-fpm
+  systemd:
+    name: php-fpm
+    state: started
+    enabled: True
+    
+
+- name: get wp-cli
+  get_url:
+    url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    dest: /usr/local/bin/wp
+    validate_certs: no
+    mode: 0755
+    force: yes
